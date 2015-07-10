@@ -28,7 +28,7 @@ The plugin can either be installed into the local development environment or clo
 Through the [Command-line Interface][CLI]:
 ```bash
 # ~~ from master ~~
-cordova plugin add https://github.com/radshag/PhoneGap-Geofencing.git && cordova prepare
+cordova plugin add https://github.com/bluebile/geofencing.git && cordova prepare
 ```
 
 ### Removing the Plugin from your project
@@ -60,7 +60,7 @@ The parameters are:
 Example:
 	
 	var params = [fid, latitude, longitude, radius];
-	DGGeofencing.startMonitoringRegion(params, function(result) {}, function(error) {
+	window.plugin.geofencing.startMonitoringRegion(params, function(result) {}, function(error) {
 		alert("failed to add region");
 	});
 
@@ -73,7 +73,7 @@ The parameters are:
 Example:
 
 	var params = [fid, latitude, longitude];
-	DGGeofencing.stopMonitoringRegion(params, 
+	window.plugin.geofencing.stopMonitoringRegion(params, 
 	function(result) {
 
 		// not used.
@@ -88,7 +88,7 @@ No parameters.
 
 Example:
 
-	DGGeofencing.startMonitoringSignificantLocationChanges(
+	window.plugin.geofencing.startMonitoringSignificantLocationChanges(
 		function(result) { 
 			console.log("Location Monitor Success: " + result);				   
 		},
@@ -102,7 +102,7 @@ No parameters.
 
 Example:
 
-	DGGeofencing.stopMonitoringSignificantLocationChanges(
+	window.plugin.geofencing.stopMonitoringSignificantLocationChanges(
 		function(result) { 
 			console.log("Stop Location Monitor Success: " + result);				   
 		},
