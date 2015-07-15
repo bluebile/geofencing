@@ -199,19 +199,19 @@ public class DGGeofencing extends CordovaPlugin implements LocationListener
 		        {
 		        	startListening();
 		        	
-			        if (locationChangedListener == null)
-			        {
-			        	locationChangedListener = new LocationChangedListener()
-			        	{
-			        		@Override
-			        		public void onLocationChanged(Location location)
-			        		{
-			        			fireLocationChangedEvent(location);
-			        		}
-			        	};
-			        }
+//			        if (locationChangedListener == null)
+//			        {
+//			        	locationChangedListener = new LocationChangedListener()
+//			        	{
+//			        		@Override
+//			        		public void onLocationChanged(Location location)
+//			        		{
+//			        			fireLocationChangedEvent(location);
+//			        		}
+//			        	};
+//			        }
 			        
-			        addLocationChangedListener(locationChangedListener);
+//			        addLocationChangedListener(locationChangedListener);
 			        
 			        JSONObject returnInfo = new JSONObject();
 			        returnInfo.put("message", "Successfully started monitoring significant location changes.");
@@ -544,11 +544,14 @@ public class DGGeofencing extends CordovaPlugin implements LocationListener
 	
 	private void startListening()
 	{
-		if(!listening)
-		{
-			locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, INTERFAL_TIME, MIN_DISTANCE, this);
-			listening = true;
-		}
+		Intent intent = new Intent("com.phonegap.geofencing.geoFencingProximityAlert");
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(context,
+				0, intent, 0);
+
+		int minTime = 5;
+		int minDistance = 1;
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime,
+				minDistance, pendingIntent);
 	}
 	
 	private void stopListeningIfNoListeners()
