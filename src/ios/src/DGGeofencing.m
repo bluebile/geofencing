@@ -29,8 +29,8 @@
 
 @synthesize locationData, locationManager;
 
-- (CDVPlugin*)initWithWebView:(UIWebView*)theWebView
-{
+- (CDVPlugin*)initWithWebView:(UIWebView*)theWebView {
+
     self = (DGGeofencing*)[super initWithWebView:(UIWebView*)theWebView];
     if (self) {
         self.locationManager = [[CLLocationManager alloc] init];
@@ -43,31 +43,31 @@
                 [self.locationManager requestAlwaysAuthorization];
             }
         }
-        self.locationManager.pausesLocationUpdatesAutomatically = NO;
+        
         __locationStarted = NO;
         __highAccuracyEnabled = NO;
         self.locationData = nil;
+        self.deferringUpdates = NO;
     }
     return self;
 }
 
 #pragma mark Location and Geofencing Permissions
-- (BOOL) isSignificantLocationChangeMonitoringAvailable
-{
+- (BOOL) isSignificantLocationChangeMonitoringAvailable {
+
     BOOL significantLocationChangeMonitoringAvailablelassPropertyAvailable = [CLLocationManager respondsToSelector:@selector(significantLocationChangeMonitoringAvailable)];
     if (significantLocationChangeMonitoringAvailablelassPropertyAvailable)
     {
         BOOL significantLocationChangeMonitoringAvailable = [CLLocationManager significantLocationChangeMonitoringAvailable];
-        NSLog(@"significantLocationChangeMonitoringAvailable: %hhd",significantLocationChangeMonitoringAvailable);
         return  (significantLocationChangeMonitoringAvailable);
     }
-    NSLog(@"NOsignificantLocationChangeMonitoringAvailable: %hhd",NO);
+    
     // by default, assume NO
     return NO;
 }
 
-- (BOOL) isRegionMonitoringAvailable
-{
+- (BOOL) isRegionMonitoringAvailable {
+
     // iOS 4.x, iOS 5.x, iOS 6.x
     BOOL regionMonitoringAvailableClassPropertyAvailable = [CLLocationManager respondsToSelector:@selector(regionMonitoringAvailable)];
     // iOS 7.0+
@@ -87,8 +87,8 @@
     return NO;
 }
 
-- (BOOL) isRegionMonitoringEnabled
-{
+- (BOOL) isRegionMonitoringEnabled {
+
     BOOL regionMonitoringEnabledClassPropertyAvailable = [CLLocationManager respondsToSelector:@selector(regionMonitoringEnabled)]; // iOS 4.0, 4.1
     BOOL authorizationStatusClassPropertyAvailable = [CLLocationManager respondsToSelector:@selector(authorizationStatus)]; // iOS 4.2+
     if (authorizationStatusClassPropertyAvailable)
@@ -109,8 +109,8 @@
     return NO;
 }
 
-- (BOOL) isAuthorized
-{
+- (BOOL) isAuthorized {
+
     BOOL authorizationStatusClassPropertyAvailable = [CLLocationManager respondsToSelector:@selector(authorizationStatus)]; // iOS 4.2+
     if (authorizationStatusClassPropertyAvailable)
     {
@@ -126,29 +126,26 @@
     return YES;
 }
 
-- (BOOL) isLocationServicesEnabled
-{
+- (BOOL) isLocationServicesEnabled {
+
     BOOL locationServicesEnabledInstancePropertyAvailable = [[self locationManager] respondsToSelector:@selector(locationServicesEnabled)]; // iOS 3.x
     BOOL locationServicesEnabledClassPropertyAvailable = [CLLocationManager respondsToSelector:@selector(locationServicesEnabled)]; // iOS 4.x
     
-    if (locationServicesEnabledClassPropertyAvailable)
-    { // iOS 4.x
+    if (locationServicesEnabledClassPropertyAvailable) { // iOS 4.x
         return [CLLocationManager locationServicesEnabled];
-    }
-    else if (locationServicesEnabledInstancePropertyAvailable)
-    { // iOS 2.x, iOS 3.x
+    } else if (locationServicesEnabledInstancePropertyAvailable) { // iOS 2.x, iOS 3.x
         return [(id)[self locationManager] locationServicesEnabled];
-    }
-    else
-    {
+    } else {
         return NO;
     }
 }
 
-
 #pragma mark Plugin Functions
 
 - (void) initCallbackForRegionMonitoring:(CDVInvokedUrlCommand *)command {
+
+    NSLog(@" ------------ initCallbackForRegionMonitoring ------------ ");
+
     NSString* callbackId = command.callbackId;
     if (!self.locationData) {
         self.locationData = [[DGLocationData alloc] init];
@@ -174,6 +171,7 @@
 }
 
 - (void) startMonitoringRegion:(CDVInvokedUrlCommand*)command {
+
     NSString* regionId = [command.arguments objectAtIndex:0];
     NSString *latitude = [command.arguments objectAtIndex:1];
     NSString *longitude = [command.arguments objectAtIndex:2];
@@ -217,18 +215,15 @@
         [self.commandDelegate sendPluginResult:result callbackId:callbackId];
     } else {
         CLLocationCoordinate2D coord = CLLocationCoordinate2DMake([latitude doubleValue], [longitude doubleValue]);
-        if(radius > locationManager.maximumRegionMonitoringDistance)
-        {
+        if(radius > locationManager.maximumRegionMonitoringDistance) {
             radius = locationManager.maximumRegionMonitoringDistance;
         }
         NSString *version = [[UIDevice currentDevice] systemVersion];
         CLRegion *region = nil;
- 
-        if ([version floatValue] >= 7.0f) //for iOS7
-        {
+        
+        if ([version floatValue] >= 7.0f) { //for iOS7
             region =  [[CLCircularRegion alloc] initWithCenter:coord radius:radius identifier:regionId];
-        } else // iOS 7 below
-        {
+        } else { // iOS 7 below
             region = [[CLRegion alloc] initCircularRegionWithCenter:coord radius:radius identifier:regionId];
         }
         [self.locationManager startMonitoringForRegion:region];
@@ -236,6 +231,7 @@
 }
 
 - (void) stopMonitoringRegion:(CDVInvokedUrlCommand*)command {
+
     DGLocationData* lData = self.locationData;
     NSString* callbackId = [lData.geofencingCallbacks objectAtIndex:0];
     // Parse Incoming Params
@@ -246,11 +242,9 @@
     CLLocationCoordinate2D coord = CLLocationCoordinate2DMake([latitude doubleValue], [longitude doubleValue]);
     NSString *version = [[UIDevice currentDevice] systemVersion];
     CLRegion *region = nil;
-    if ([version floatValue] >= 7.0f) //for iOS7
-    {
+    if ([version floatValue] >= 7.0f) { //for iOS7
         region =  [[CLCircularRegion alloc] initWithCenter:coord radius:10.0 identifier:regionId];
-    } else // iOS 7 below
-    {
+    } else { // iOS 7 below
         region = [[CLRegion alloc] initCircularRegionWithCenter:coord radius:10.0 identifier:regionId];
     }
     [[self locationManager] stopMonitoringForRegion:region];
@@ -271,14 +265,22 @@
 
 
 - (void) startMonitoringSignificantLocationChanges:(CDVInvokedUrlCommand*)command {
+
+    NSString* callbackId = command.callbackId;
+    if (!self.locationData) {
+        self.locationData = [[DGLocationData alloc] init];
+    }
     DGLocationData* lData = self.locationData;
-    NSString *callbackId = [lData.geofencingCallbacks objectAtIndex:0];
-    if (![self isLocationServicesEnabled])
-    {
-        NSLog(@"NOT isLocationServicesEnabled");
+    
+    if (!lData.geofencingCallbacks) {
+        lData.geofencingCallbacks = [NSMutableArray arrayWithCapacity:1];
+    }
+    
+    [lData.geofencingCallbacks addObject:callbackId];
+
+    if (![self isLocationServicesEnabled]) {
         BOOL forcePrompt = NO;
-        if (!forcePrompt)
-        {
+        if (!forcePrompt) {
             lData.locationStatus = GEOFENCINGPERMISSIONDENIED;
             NSMutableDictionary* posError = [NSMutableDictionary dictionaryWithCapacity:2];
             [posError setObject:[NSNumber numberWithInt:GEOFENCINGPERMISSIONDENIED] forKey:@"code"];
@@ -290,9 +292,7 @@
         }
     }
     
-    if (![self isAuthorized])
-    {
-        NSLog(@"NOT isAuthorized");
+    if (![self isAuthorized]) {
         NSString* message = nil;
         BOOL authStatusAvailable = [CLLocationManager respondsToSelector:@selector(authorizationStatus)]; // iOS 4.2+
         if (authStatusAvailable) {
@@ -316,9 +316,7 @@
         return;
     }
     
-    if (![self isSignificantLocationChangeMonitoringAvailable])
-    {
-        NSLog(@"NOT isSignificantLocationChangeMonitoringAvailable");
+    if (![self isSignificantLocationChangeMonitoringAvailable]) {
         lData.locationStatus = GEOFENCINGUNAVAILABLE;
         NSMutableDictionary* posError = [NSMutableDictionary dictionaryWithCapacity:2];
         [posError setObject:[NSNumber numberWithInt:GEOFENCINGPERMISSIONDENIED] forKey:@"code"];
@@ -329,18 +327,25 @@
         return;
     }
 
-    NSLog(@"STARTTTTTT");
-    [[self locationManager] startUpdatingLocation];
+    [[self locationManager] startMonitoringSignificantLocationChanges];
+
+    NSMutableDictionary* returnInfo = [NSMutableDictionary dictionaryWithCapacity:2];
+    NSNumber* timestamp = [NSNumber numberWithDouble:([[NSDate date] timeIntervalSince1970] * 1000)];
+    [returnInfo setObject:timestamp forKey:@"timestamp"];
+    [returnInfo setObject:@"Region monitoring callback added" forKey:@"message"];
+    [returnInfo setObject:@"initmonitor" forKey:@"callbacktype"];
+    
+    CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:returnInfo];
+    [result setKeepCallbackAsBool:YES];
+    [self.commandDelegate sendPluginResult:result callbackId:callbackId];
 }
 
 - (void) stopMonitoringSignificantLocationChanges:(CDVInvokedUrlCommand*)command {
     DGLocationData* lData = self.locationData;
     NSString *callbackId = [lData.geofencingCallbacks objectAtIndex:0];
-    if (![self isLocationServicesEnabled])
-    {
+    if (![self isLocationServicesEnabled]) {
         BOOL forcePrompt = NO;
-        if (!forcePrompt)
-        {
+        if (!forcePrompt) {
             lData.locationStatus = GEOFENCINGPERMISSIONDENIED;
             NSMutableDictionary* posError = [NSMutableDictionary dictionaryWithCapacity:2];
             [posError setObject:[NSNumber numberWithInt:GEOFENCINGPERMISSIONDENIED] forKey:@"code"];
@@ -352,8 +357,7 @@
         }
     }
     
-    if (![self isAuthorized])
-    {
+    if (![self isAuthorized]) {
         NSString* message = @"User has explicitly denied authorization for this application, or location services are disabled in Settings.";
         BOOL authStatusAvailable = [CLLocationManager respondsToSelector:@selector(authorizationStatus)]; // iOS 4.2+
         if (authStatusAvailable) {
@@ -377,8 +381,7 @@
         return;
     }
     
-    if (![self isSignificantLocationChangeMonitoringAvailable])
-    {
+    if (![self isSignificantLocationChangeMonitoringAvailable]) {
         lData.locationStatus = GEOFENCINGUNAVAILABLE;
         NSMutableDictionary* posError = [NSMutableDictionary dictionaryWithCapacity:2];
         [posError setObject:[NSNumber numberWithInt:GEOFENCINGPERMISSIONDENIED] forKey:@"code"];
@@ -388,7 +391,7 @@
         [self.commandDelegate sendPluginResult:result callbackId:callbackId];
         return;
     }
-    NSLog(@"STARTTTTTT");
+
     [[self locationManager] stopMonitoringSignificantLocationChanges];
 }
 
@@ -401,6 +404,7 @@
  *    Invoked when a monitoring for a region started successfully.
  */
 - (void)locationManager:(CLLocationManager *)manager didStartMonitoringForRegion:(CLRegion *)region {
+
     NSString *regionId = region.identifier;
     DGLocationData* lData = self.locationData;
     NSString* callbackId = [lData.geofencingCallbacks objectAtIndex:0];
@@ -425,6 +429,7 @@
  *    Invoked when a region monitoring error has occurred. Error types are defined in "CLError.h".
  */
 - (void)locationManager:(CLLocationManager *)manager monitoringDidFailForRegion:(CLRegion *)region withError:(NSError *)error {
+
     NSString *regionId = region.identifier;
     DGLocationData* lData = self.locationData;
     NSString* callbackId = [lData.geofencingCallbacks objectAtIndex:0];
@@ -450,6 +455,7 @@
  *    CLLocationManager instance with a non-nil delegate that implements this method.
  */
 - (void)locationManager:(CLLocationManager *)manager didEnterRegion:(CLRegion *)region {
+
     NSString *regionId = region.identifier;
     DGLocationData* lData = self.locationData;
     NSString* callbackId = [lData.geofencingCallbacks objectAtIndex:0];
@@ -478,6 +484,7 @@
  *    CLLocationManager instance with a non-nil delegate that implements this method.
  */
 - (void)locationManager:(CLLocationManager *)manager didExitRegion:(CLRegion *)region {
+
     NSString *regionId = region.identifier;
     DGLocationData* lData = self.locationData;
     NSString* callbackId = [lData.geofencingCallbacks objectAtIndex:0];
@@ -496,67 +503,39 @@
         [result setKeepCallbackAsBool:YES];
         [self.commandDelegate sendPluginResult:result callbackId:callbackId];
     }
-
 }
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations {
-    CLLocation *newLocation = [locations objectAtIndex:0];
 
-//    DGLocationData* lData = self.locationData;
-//    NSString* callbackId = [lData.geofencingCallbacks objectAtIndex:0];
-    
+    BOOL appAtivo = UIApplication.sharedApplication.applicationState == UIApplicationStateActive;
+
+    CLLocation *location = [locations objectAtIndex:0];
+
+    DGLocationData* lData = self.locationData;
+    NSString* callbackId = [lData.geofencingCallbacks objectAtIndex:0];
+
     NSMutableDictionary *returnInfo = [NSMutableDictionary dictionary];
-    [returnInfo setObject:[NSNumber numberWithDouble:[newLocation.timestamp timeIntervalSince1970]] forKey:@"new_timestamp"];
-    [returnInfo setObject:[NSNumber numberWithDouble:newLocation.speed] forKey:@"new_speed"];
-    [returnInfo setObject:[NSNumber numberWithDouble:newLocation.course] forKey:@"new_course"];
-    [returnInfo setObject:[NSNumber numberWithDouble:newLocation.verticalAccuracy] forKey:@"new_verticalAccuracy"];
-    [returnInfo setObject:[NSNumber numberWithDouble:newLocation.horizontalAccuracy] forKey:@"new_horizontalAccuracy"];
-    [returnInfo setObject:[NSNumber numberWithDouble:newLocation.altitude] forKey:@"new_altitude"];
-    [returnInfo setObject:[NSNumber numberWithDouble:newLocation.coordinate.latitude] forKey:@"new_latitude"];
-    [returnInfo setObject:[NSNumber numberWithDouble:newLocation.coordinate.longitude] forKey:@"new_longitude"];
-    
+    [returnInfo setObject:[NSNumber numberWithDouble:[location.timestamp timeIntervalSince1970]] forKey:@"timestamp"];
+    [returnInfo setObject:[NSNumber numberWithDouble:location.speed] forKey:@"speed"];
+    [returnInfo setObject:[NSNumber numberWithDouble:location.course] forKey:@"course"];
+    [returnInfo setObject:[NSNumber numberWithDouble:location.verticalAccuracy] forKey:@"verticalAccuracy"];
+    [returnInfo setObject:[NSNumber numberWithDouble:location.horizontalAccuracy] forKey:@"horizontalAccuracy"];
+    [returnInfo setObject:[NSNumber numberWithDouble:location.altitude] forKey:@"altitude"];
+    [returnInfo setObject:[NSNumber numberWithDouble:location.coordinate.latitude] forKey:@"latitude"];
+    [returnInfo setObject:[NSNumber numberWithDouble:location.coordinate.longitude] forKey:@"longitude"];
+    [returnInfo setObject:[NSNumber numberWithBool:appAtivo] forKey:@"app_ativo"];
+
     [returnInfo setObject:@"locationupdate" forKey:@"callbacktype"];
-   
-    NSLog(@"Latitude: %@", [NSNumber numberWithDouble:newLocation.coordinate.longitude]);
-    NSLog(@"Longitude: %@", [NSNumber numberWithDouble:newLocation.coordinate.longitude]);
 
-//    CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:returnInfo];
-//    [result setKeepCallbackAsBool:YES];
-//    [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+    if (!self.deferringUpdates) {
+        [locationManager allowDeferredLocationUpdatesUntilTraveled:50 timeout:5];
+
+        self.deferringUpdates = YES;
+    }
+
+    CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:returnInfo];
+    [result setKeepCallbackAsBool:YES];
+    [self.commandDelegate sendPluginResult:result callbackId:callbackId];
 }
-
-//-(void) locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation {
-//    
-//    DGLocationData* lData = self.locationData;
-//    NSString* callbackId = [lData.geofencingCallbacks objectAtIndex:0];
-//    
-//    NSMutableDictionary *returnInfo = [NSMutableDictionary dictionary];
-//    [returnInfo setObject:[NSNumber numberWithDouble:[newLocation.timestamp timeIntervalSince1970]] forKey:@"new_timestamp"];
-//    [returnInfo setObject:[NSNumber numberWithDouble:newLocation.speed] forKey:@"new_speed"];
-//    [returnInfo setObject:[NSNumber numberWithDouble:newLocation.course] forKey:@"new_course"];
-//    [returnInfo setObject:[NSNumber numberWithDouble:newLocation.verticalAccuracy] forKey:@"new_verticalAccuracy"];
-//    [returnInfo setObject:[NSNumber numberWithDouble:newLocation.horizontalAccuracy] forKey:@"new_horizontalAccuracy"];
-//    [returnInfo setObject:[NSNumber numberWithDouble:newLocation.altitude] forKey:@"new_altitude"];
-//    [returnInfo setObject:[NSNumber numberWithDouble:newLocation.coordinate.latitude] forKey:@"new_latitude"];
-//    [returnInfo setObject:[NSNumber numberWithDouble:newLocation.coordinate.longitude] forKey:@"new_longitude"];
-//    
-//    [returnInfo setObject:[NSNumber numberWithDouble:[oldLocation.timestamp timeIntervalSince1970]] forKey:@"old_timestamp"];
-//    [returnInfo setObject:[NSNumber numberWithDouble:oldLocation.speed] forKey:@"old_speed"];
-//    [returnInfo setObject:[NSNumber numberWithDouble:oldLocation.course] forKey:@"oldcourse"];
-//    [returnInfo setObject:[NSNumber numberWithDouble:oldLocation.verticalAccuracy] forKey:@"old_verticalAccuracy"];
-//    [returnInfo setObject:[NSNumber numberWithDouble:oldLocation.horizontalAccuracy] forKey:@"old_horizontalAccuracy"];
-//    [returnInfo setObject:[NSNumber numberWithDouble:oldLocation.altitude] forKey:@"old_altitude"];
-//    [returnInfo setObject:[NSNumber numberWithDouble:oldLocation.coordinate.latitude] forKey:@"old_latitude"];
-//    [returnInfo setObject:[NSNumber numberWithDouble:oldLocation.coordinate.longitude] forKey:@"old_longitude"];
-//    
-//    
-//    [returnInfo setObject:@"locationupdate" forKey:@"callbacktype"];
-//
-//    CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:returnInfo];
-//    [result setKeepCallbackAsBool:YES];
-//    [self.commandDelegate sendPluginResult:result callbackId:callbackId];
-//}
-
-
 
 @end
