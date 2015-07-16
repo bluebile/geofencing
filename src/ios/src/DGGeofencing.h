@@ -54,6 +54,7 @@ typedef NSUInteger DGGeofencingStatus;
 
 @property (nonatomic, strong) CLLocationManager* locationManager;
 @property (nonatomic, strong) DGLocationData* locationData;
+@property BOOL deferringUpdates;
 
 - (BOOL) isLocationServicesEnabled;
 - (BOOL) isAuthorized;
