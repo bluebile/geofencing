@@ -29,6 +29,26 @@
         <source-file src="src/ios/src/DGGeofencing.m" />
     </platform>
 
+    <platform name="WP8">
+        <config-file target="config.xml" parent="/*">
+            <feature name="DGGeofencing">
+                <param name="wp-package" value="DGGeofencing" onload="true" />
+                <param name="onload" value="true" />
+            </feature>
+        </config-file>
+
+        <config-file target="Properties/WMAppManifest.xml" parent="/Deployment/App/Tasks/DefaultTask">
+            <BackgroundExecution>
+                <ExecutionType Name="LocationTracking" />
+            </BackgroundExecution>
+        </config-file>
+
+        <config-file target="Properties/WMAppManifest.xml" parent="/Deployment/App/Capabilities">
+            <Capability Name="ID_CAP_LOCATION" />
+        </config-file> 
+        <header-file src="src/wp8/DGGeofencing.cs" />
+    </platform>
+
 	<platform name="android">
 
         <source-file src="src/android/src/com/phonegap/geofencing/DGGeofencing.java" target-dir="src/com/phonegap/geofencing" />
