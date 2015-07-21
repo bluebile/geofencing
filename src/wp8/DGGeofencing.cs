@@ -1,3 +1,9 @@
+using br.com.mbamobi.geo;
+using Microsoft.Phone.Shell;
+using System.Windows;
+using System.Windows.Threading;
+using Windows.Devices.Geolocation;
+using WPCordovaClassLib.Cordova.Commands;
 namespace Cordova.Extension.Commands
 {
 	public class DGGeofencing : BaseCommand
@@ -8,16 +14,16 @@ namespace Cordova.Extension.Commands
 		public static bool RunningInBackground { get; set; }
 
 
-    	public BaseCommand()
+        public DGGeofencing()
         {
             PhoneApplicationService service = PhoneApplicationService.Current;
             service.RunningInBackground += this.Application_RunningInBackground;
-            if (App.Geolocator == null)
+            if (DGGeofencing.Geolocator == null)
 		    {
-		        App.Geolocator = new Geolocator();
-		        App.Geolocator.DesiredAccuracy = PositionAccuracy.High;
-		        App.Geolocator.MovementThreshold = 10; // The units are meters.
-		        App.Geolocator.PositionChanged += geolocator_PositionChanged;
+                DGGeofencing.Geolocator = new Geolocator();
+                DGGeofencing.Geolocator.DesiredAccuracy = PositionAccuracy.High;
+                DGGeofencing.Geolocator.MovementThreshold = 10; // The units are meters.
+                DGGeofencing.Geolocator.PositionChanged += geolocator_PositionChanged;
 		    }
         }
 
@@ -40,9 +46,9 @@ namespace Cordova.Extension.Commands
 		void geolocator_PositionChanged(Geolocator sender, PositionChangedEventArgs args)
 		{
 
-		    if (!App.RunningInBackground)
+            if (!DGGeofencing.RunningInBackground)
 		    {
-		        Dispatcher.BeginInvoke(() =>
+                Deployment.Current.Dispatcher.BeginInvoke(() =>
 		        {
 		        	System.Diagnostics.Debug.WriteLine("======= Geolocator =======");
 		            System.Diagnostics.Debug.WriteLine(args.Position.Coordinate.Latitude.ToString("0.00"));
