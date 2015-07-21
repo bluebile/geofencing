@@ -12,7 +12,7 @@
     <js-module src="www/DGGeofencing.js" name="DGGeofencing">
         <clobbers target="plugin.geofencing" />
     </js-module>
-
+w
     <platform name="ios">
 		<config-file target="*-Info.plist" parent="NSLocationAlwaysUsageDescription">
 			<string>${EXECUTABLE_NAME} Would Like to Use Your Current Location Even In Background.</string>
@@ -46,7 +46,7 @@
         <config-file target="Properties/WMAppManifest.xml" parent="/Deployment/App/Capabilities">
             <Capability Name="ID_CAP_LOCATION" />
         </config-file> 
-        <header-file src="src/wp8/DGGeofencing.cs" />
+        <source-file src="src/wp8/DGGeofencing.cs" />
     </platform>
 
 	<platform name="android">
