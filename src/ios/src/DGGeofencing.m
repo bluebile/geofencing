@@ -327,8 +327,14 @@
         return;
     }
 
-    [[self locationManager] startMonitoringSignificantLocationChanges];
+    self.locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters;
+    self.locationManager.distanceFilter = 1000;
+    self.locationManager.pausesLocationUpdatesAutomatically = NO;
+    self.locationManager.activityType = CLActivityTypeOther;
 
+    [[self locationManager] startUpdatingLocation];
+    [[self locationManager] startMonitoringSignificantLocationChanges];
+    
     NSMutableDictionary* returnInfo = [NSMutableDictionary dictionaryWithCapacity:2];
     NSNumber* timestamp = [NSNumber numberWithDouble:([[NSDate date] timeIntervalSince1970] * 1000)];
     [returnInfo setObject:timestamp forKey:@"timestamp"];
@@ -392,6 +398,7 @@
         return;
     }
 
+    [[self locationManager] stopUpdatingLocation];
     [[self locationManager] stopMonitoringSignificantLocationChanges];
 }
 
@@ -528,7 +535,7 @@
     [returnInfo setObject:@"locationupdate" forKey:@"callbacktype"];
 
     if (!self.deferringUpdates) {
-        [locationManager allowDeferredLocationUpdatesUntilTraveled:50 timeout:5];
+        [self.locationManager allowDeferredLocationUpdatesUntilTraveled:1000 timeout:0];
 
         self.deferringUpdates = YES;
     }
